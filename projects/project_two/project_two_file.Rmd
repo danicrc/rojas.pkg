@@ -15,12 +15,8 @@ Save this file in your `projects` directory. You can either save it in a project
 1) Load in your data. Which variable will you be using as a predictor, and which as a response? (5 pts)
 
 ```{r}
-Data_Rojas <- read_csv("../../data/Data_Rojas.csv")
-
-Data_Rojas <- Data_Rojas %>% 
-  na.omit() %>% 
-  filter(Follicles != "NA")
-Data_Rojas
+Data_RojasC <- read_csv("../../data/Data_RojasC.csv")
+Data_RojasC
 
 ```
 
@@ -32,23 +28,24 @@ Data_Rojas
 
 
 ```{r}
-ggplot(Data_Rojas, aes(x = VTG, y = BHB)) +
+Data_RojasC <- Data_RojasC %>% 
+  filter(VTG != "NA") %>% 
+  filter(BHB != "NA")
+ggplot(Data_RojasC, aes(x = VTG, y = BHB)) +
 geom_point() +
 geom_smooth(method = "lm")
 ```
 
 ```
-#DRC the data seems relatively linear, most of the points are following the same direction. However, there are still points that are outside the line.
+#DRC the data does appear to be related linearly. Most of the points are aligned in the same direction. 
 
-Positivo pero los puntos estan juntos
 ```
-
 
 3) Fit the linear model. View the summary. (5 pts)
 
 
 ```{r}
-hormonas_model_fit <- lm(VTG ~ BHB, data = Data_Rojas)
+hormonas_model_fit <- lm(VTG ~ BHB, data = Data_RojasC)
 summary(hormonas_model_fit)
 ```
 
@@ -56,16 +53,16 @@ summary(hormonas_model_fit)
 
 
 ```
-# DRC, yes. The model does not have good predictive power. The residual standard error is really high (11.16) and is not close to 0, this indicates that probably the model is poor. The intercept significant (p = 0.0224) because is less that .05, however, the BHB is highly significant (p = 6.47e-08). The Multiple R-squared: 0.5052, means that 50 of the variation could not been explained by the VTG.  
+# DRC, yes. The model does not have good predictive power for the VTG and the BHB. The residual standard error is high (11.16) and is not close to 0, this indicates that probably the model is poor for this data. The intercept is significant (p = 0.0224) because is less than .05. However, the BHB is highly significant (p = 6.47e-08). The Multiple R-squared: 0.5052, means that 50 of the variation could not been explained by the VTG.  
 
-No, the predictor does predict the response, but the linear model does not fir with this data. 
+Yes, the predictor does predict the response, but the linear model does not fit with this data. 
 
 ```
 
 5) Plot the model on the graph. Increase the size of the text so it is comfortably readable at 5 feet. Make sure axis labels are readable and not overlapping with one another. (5 pts)
 
 ```{r}
-ggplot(Data_Rojas, aes(x = VTG, y = BHB)) +
+ggplot(Data_RojasC, aes(x = VTG, y = BHB)) +
 geom_point(size = 2.5) +
 labs(x = "VTG", y = "BHB") +
 theme(legend.position = "bottom", text = element_text(size = 16))
@@ -85,9 +82,11 @@ qqline(augmented_fit$.resid, col = "green")
 
 Why is normality of residuals important? 
 
-```{r}
+```
+#DRC, on my graph the residuals not look normal, there are not taht bad but coud be better. Both tails of the plot have a desviation and the right is really notorious. 
 
-#Answer here
+#DRC, The normality of the residuals is important because, in the linear model, we can use the residuals for prediction, and to see if we are doing the right model. If the residuals are not normal and are far off the line, the model that we are doing is not correct, and we probably need to take another approach to the data model. 
+
 ```
 
 7) If you are using `surveys_complete`: Is there interspecific variation in the linear model? Hint: look at our prior work with facet plots. (15 pts) 
@@ -95,10 +94,10 @@ Why is normality of residuals important?
 If you are *not* using  `surveys_complete`: Do you think there are groupings within your data that may have a separate linear model? Try grouping the data by that variable and redoing the lm. If this would not make sense for your data, you may also attempt to do multiple predictor variables. (15 pts)
 
 ```{r}
-model_fit <- lm(VTG ~ Testosterone, data = Data_Rojas)
+model_fit <- lm(VTG ~ Testosterone, data = Data_RojasC)
 summary(model_fit)
 
-ggplot(Data_Rojas, aes(x = VTG, y = Testosterone)) +
+ggplot(Data_RojasC, aes(x = VTG, y = Testosterone)) +
 geom_point() +
 geom_smooth(method = "lm")
 
@@ -112,50 +111,74 @@ In this portion, you are free to use your own data if you have a categorical pre
 1) First, plot the data grouped by sex (5 pts)
 
 ```{r}
-Data_Rojas %>% 
+Data_RojasC %>% 
+  na.omit() %>% 
   group_by(Follicles) %>% 
-  ggplot(aes(x = Follicles, y = VTG, color = Follicles)) +
-geom_point() +
-geom_smooth(method = "lm")
+  ggplot(aes(x = Follicles, y = VTG)) +
+geom_point()
+
 
 ```
 
 2) Try an ANOVA of this data (5 pt)
 
 ```{r}
-# ANOVA code here
+hormone_fit <- lm(VTG ~ Follicles, data = Data_RojasC)
+aov(hormone_fit)-> anovaDR
+summary(anovaDR)
+
+Data_RojasC %>% 
+  na.omit() %>% 
+  group_by(Follicles) %>% 
+  ggplot(aes(x = Follicles, y = VTG, color = Follicles)) +
+geom_jitter() +
+geom_smooth(method = "lm")
+
 ```
 
 3) How about a linear model? What information does this give you that an ANOVA can't? (5 pts)
 
 
 ```{r}
-#Code here
+Folicles_model_fit <- lm(VTG ~ Follicles, data = Data_RojasC)
+summary(Folicles_model_fit)
+
 ```
 
 ```
-#Answer here
+#DRC, the linear model gives more information about the data. For example, we could use ANOVA to ask questions about our data to predict quality or categories. Instead, the linear model is fixed into two or more independent variables. Also, the information with the linear model is more in detail than with the ANOVA.  
+
 ```
 
 3) Plot the lm with the data, with points colored by sex. (10 pts)
 
 
 ```{r}
-#Plot code here
+Data_RojasC %>% 
+  na.omit %>% 
+  group_by(Follicles) %>% 
+ggplot (aes(x = Follicles, y = VTG, color = Follicles)) +
+geom_point() +
+geom_smooth(method = "lm")
+
+
 ```
 
 4) Choose any model we've looked at so far, but use two predictor variables. Perform an LM, plot the results, and state if this changes your interpretation of the relationship between variables (10 pts)
 
 ```{r}
-# LM Code Here 
+Data_RojasC <- Data_RojasC %>% 
+  filter(Testosterone != "NA") %>% 
+  filter(E2 != "NA")
+ggplot(Data_RojasC, aes(x = Testosterone, y = E2, color = VTG)) +
+geom_point() +
+geom_smooth(method = "lm")
 ```
 
-```{r}
-# Plot Code Here 
-```
 
 ```
-# Text answer here
+#DRC, The interpretation between variables is different. First is not a linear relationship between them as they look dispersed. With the color gradient interaction, we made the assumption that the Testosterone and the E2 are independent of one another. However, the VTG seems related to Testosterone. This interaction effect does not fit with these predictors, in this case is better to use another model. 
+
 ```
 
 ## Part Three
@@ -164,13 +187,15 @@ geom_smooth(method = "lm")
 1) Add and commit this document (5 pts)
 
 ```
-#Commands here
+#DRC, After finishing the homework, I went to "Git", and marked the homework. I clicked on the commit, and I added the name that I wanted to give to the document for Github in the commit message. Before committing the homework, the package asked me for the link we copied in the previous class, so I copied it. After that, I saw a message in the comment that said that the document was read, and then I pressed push. 
+
 ```
 
 2) Push your changes to github (10 pts)
 
 ```
-#Commands here
+#DRC, project two is in my project directory on GitHub. My account is danicrc and the information is on rojas.pkg
+
 ```
 
 
